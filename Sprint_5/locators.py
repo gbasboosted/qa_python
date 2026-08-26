@@ -16,6 +16,8 @@ class HeaderLocators:
 
 
 class ConstructorLocators:
+    # Часть класса, которая обозначает активную вкладку конструктора
+    ACTIVE_TAB_CLASS = "tab_tab_type_current"
     # Заголовок страницы конструктора
     PAGE_TITLE = (By.XPATH, "//h1[normalize-space()='Соберите бургер']")
     # Кнопка «Войти в аккаунт» на главной странице

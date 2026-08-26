@@ -13,40 +13,43 @@ from locators import (
 from urls import BASE_URL, FORGOT_PASSWORD_URL, REGISTER_URL
 
 
-def test_login_from_main_page(driver, wait, registered_user):
-    driver.get(BASE_URL)
-    wait.until(
-        conditions.element_to_be_clickable(ConstructorLocators.LOGIN_BUTTON)
-    ).click()
-    wait.until(conditions.visibility_of_element_located(LoginLocators.PAGE_TITLE))
+class TestLogin:
+    def test_login_from_main_page(self, driver, wait, registered_user):
+        driver.get(BASE_URL)
+        wait.until(
+            conditions.element_to_be_clickable(ConstructorLocators.LOGIN_BUTTON)
+        ).click()
+        wait.until(conditions.visibility_of_element_located(LoginLocators.PAGE_TITLE))
 
-    login_user(driver, wait, registered_user)
+        login_user(driver, wait, registered_user)
+        assert driver.find_element(*ConstructorLocators.PAGE_TITLE).is_displayed()
 
-def test_login_from_personal_account_link(driver, wait, registered_user):
-    driver.get(BASE_URL)
-    wait.until(
-        conditions.element_to_be_clickable(HeaderLocators.PERSONAL_ACCOUNT_LINK)
-    ).click()
-    wait.until(conditions.visibility_of_element_located(LoginLocators.PAGE_TITLE))
+    def test_login_from_personal_account_link(self, driver, wait, registered_user):
+        driver.get(BASE_URL)
+        wait.until(
+            conditions.element_to_be_clickable(HeaderLocators.PERSONAL_ACCOUNT_LINK)
+        ).click()
+        wait.until(conditions.visibility_of_element_located(LoginLocators.PAGE_TITLE))
 
-    login_user(driver, wait, registered_user)
+        login_user(driver, wait, registered_user)
+        assert driver.find_element(*ConstructorLocators.PAGE_TITLE).is_displayed()
 
+    def test_login_from_registration_form(self, driver, wait, registered_user):
+        driver.get(REGISTER_URL)
+        wait.until(
+            conditions.element_to_be_clickable(RegistrationLocators.LOGIN_LINK)
+        ).click()
+        wait.until(conditions.visibility_of_element_located(LoginLocators.PAGE_TITLE))
 
-def test_login_from_registration_form(driver, wait, registered_user):
-    driver.get(REGISTER_URL)
-    wait.until(
-        conditions.element_to_be_clickable(RegistrationLocators.LOGIN_LINK)
-    ).click()
-    wait.until(conditions.visibility_of_element_located(LoginLocators.PAGE_TITLE))
+        login_user(driver, wait, registered_user)
+        assert driver.find_element(*ConstructorLocators.PAGE_TITLE).is_displayed()
 
-    login_user(driver, wait, registered_user)
+    def test_login_from_forgot_password_form(self, driver, wait, registered_user):
+        driver.get(FORGOT_PASSWORD_URL)
+        wait.until(
+            conditions.element_to_be_clickable(ForgotPasswordLocators.LOGIN_LINK)
+        ).click()
+        wait.until(conditions.visibility_of_element_located(LoginLocators.PAGE_TITLE))
 
-
-def test_login_from_forgot_password_form(driver, wait, registered_user):
-    driver.get(FORGOT_PASSWORD_URL)
-    wait.until(
-        conditions.element_to_be_clickable(ForgotPasswordLocators.LOGIN_LINK)
-    ).click()
-    wait.until(conditions.visibility_of_element_located(LoginLocators.PAGE_TITLE))
-
-    login_user(driver, wait, registered_user)
+        login_user(driver, wait, registered_user)
+        assert driver.find_element(*ConstructorLocators.PAGE_TITLE).is_displayed()
