@@ -15,7 +15,7 @@ class TestLogoNavigation:
 
         page.click_scooter_logo()
 
-        assert driver.current_url.rstrip("/") == BASE_URL
+        assert page.get_current_url().rstrip("/") == BASE_URL
         assert page.is_main_page_open()
 
     @allure.title("Логотип Яндекса открывает Дзэн в новом окне")

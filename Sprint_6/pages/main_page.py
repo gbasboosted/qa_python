@@ -1,11 +1,7 @@
 """Page Object главной страницы «Яндекс.Самоката»."""
 
-from urllib.parse import urlparse
-
 import allure
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as conditions
-from selenium.webdriver.support.ui import WebDriverWait
 
 from pages.base_page import BasePage
 from urls import BASE_URL, DZEN_DOMAIN
@@ -24,9 +20,11 @@ class MainPage(BasePage):
         "bottom": BOTTOM_ORDER_BUTTON,
     }
 
+    @allure.step("Получить локатор вопроса №{index}")
     def faq_question(self, index):
         return (By.ID, f"accordion__heading-{index}")
 
+    @allure.step("Получить локатор ответа №{index}")
     def faq_answer(self, index):
         return (By.ID, f"accordion__panel-{index}")
 
@@ -44,7 +42,7 @@ class MainPage(BasePage):
     @allure.step("Начать заказ через кнопку {position}")
     def start_order(self, position):
         self.click(self.ORDER_BUTTONS[position])
-        self.wait.until(conditions.url_contains("/order"))
+        self.wait_for_url_contains("/order")
 
     @allure.step("Перейти по логотипу Самоката")
     def click_scooter_logo(self):
@@ -52,16 +50,14 @@ class MainPage(BasePage):
 
     @allure.step("Открыть Дзэн по логотипу Яндекса")
     def click_yandex_logo(self):
-        old_handles = set(self.driver.window_handles)
+        old_handles = self.get_window_handles()
         self.click(self.YANDEX_LOGO)
         self.switch_to_new_window(old_handles)
 
+    @allure.step("Проверить, что открыта главная страница Самоката")
     def is_main_page_open(self):
         return self.find_visible(self.MAIN_PAGE_TITLE).is_displayed()
 
+    @allure.step("Проверить, что открыт Дзэн")
     def is_dzen_open(self):
-        return WebDriverWait(self.driver, 30).until(
-            lambda driver: (
-                urlparse(driver.current_url).hostname or ""
-            ).endswith(DZEN_DOMAIN)
-        )
+        return self.wait_for_domain(DZEN_DOMAIN)

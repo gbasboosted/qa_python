@@ -42,12 +42,14 @@ class OrderPage(BasePage):
         "and contains(normalize-space(), 'Заказ оформлен')]",
     )
 
+    @allure.step("Получить локатор станции метро {station}")
     def metro_option(self, station):
         return (
             By.XPATH,
             "//button[.//div[normalize-space()=" + repr(station) + "]]",
         )
 
+    @allure.step("Получить локатор срока аренды {duration}")
     def duration_option(self, duration):
         return (
             By.XPATH,
@@ -84,5 +86,6 @@ class OrderPage(BasePage):
         self.click(self.SUBMIT_ORDER_BUTTON)
         self.click(self.CONFIRM_ORDER_BUTTON)
 
+    @allure.step("Получить сообщение об успешном заказе")
     def success_message(self):
         return self.text_of(self.SUCCESS_MODAL_TITLE)
