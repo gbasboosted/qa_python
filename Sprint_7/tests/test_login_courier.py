@@ -1,6 +1,5 @@
 import allure
 import pytest
-import requests
 
 from api_client import CourierApi
 from data import ResponseMessages
@@ -10,7 +9,7 @@ from helpers import generate_random_string
 @allure.feature("Логин курьера")
 class TestLoginCourier:
     @allure.title("Курьер может авторизоваться и получает id")
-    def test_registered_courier_can_login(self, registered_courier):
+    def test_login_registered_courier_returns_id(self, registered_courier):
         payload = registered_courier["payload"]
 
         response = CourierApi.login(
@@ -31,17 +30,14 @@ class TestLoginCourier:
             "message": ResponseMessages.LOGIN_DATA_MISSING,
         }
 
-    @allure.title("Без пароля авторизация должна возвращать ошибку")
-    def test_login_without_password_returns_error(self, registered_courier):
-        try:
-            response = CourierApi.login(
-                {"login": registered_courier["payload"]["login"]}
-            )
-        except requests.Timeout:
-            pytest.xfail(
-                "Стенд не отвечает на запрос без password; дефект зафиксирован "
-                "при ручной проверке"
-            )
+    @allure.title("С пустым паролем авторизация возвращает ошибку")
+    def test_login_with_empty_password_returns_error(self, registered_courier):
+        response = CourierApi.login(
+            {
+                "login": registered_courier["payload"]["login"],
+                "password": "",
+            }
+        )
 
         assert response.status_code == 400
         assert response.json() == {
@@ -72,7 +68,7 @@ class TestLoginCourier:
         }
 
     @allure.title("Несуществующий курьер не может авторизоваться")
-    def test_nonexistent_courier_cannot_login(self):
+    def test_login_nonexistent_courier_returns_not_found(self):
         response = CourierApi.login(
             {
                 "login": generate_random_string(20),
