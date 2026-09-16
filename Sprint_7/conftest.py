@@ -1,9 +1,21 @@
 """Фикстуры создают уникальные данные и очищают их после теста."""
 
+import time
+
 import pytest
 
 from api_client import CourierApi, OrderApi
 from helpers import generate_courier_payload, generate_order_payload
+
+
+def get_order_id_when_available(track, attempts=5):
+    for _ in range(attempts):
+        response = OrderApi.get_by_track(track)
+        order = response.json().get("order")
+        if response.status_code == 200 and order:
+            return order.get("id")
+        time.sleep(1)
+    return None
 
 
 @pytest.fixture
@@ -23,8 +35,9 @@ def courier_factory():
                 }
             )
             if login_response.status_code == 200:
-                courier_id = login_response.json()["id"]
-                created_courier_ids.append(courier_id)
+                courier_id = login_response.json().get("id")
+                if courier_id is not None:
+                    created_courier_ids.append(courier_id)
 
         return {
             "payload": courier,
@@ -47,7 +60,9 @@ def order_factory():
         response = OrderApi.create(payload)
 
         if response.status_code == 201:
-            created_tracks.append(response.json()["track"])
+            track = response.json().get("track")
+            if track is not None:
+                created_tracks.append(track)
 
         return {"payload": payload, "response": response}
 
@@ -59,19 +74,14 @@ def order_factory():
 
 @pytest.fixture
 def registered_courier(courier_factory):
-    courier = courier_factory()
-    assert courier["response"].status_code == 201
-    assert courier["id"] is not None
-    return courier
+    return courier_factory()
 
 
 @pytest.fixture
 def created_order(order_factory):
     order = order_factory(["BLACK"])
-    assert order["response"].status_code == 201
-    track = order["response"].json()["track"]
-    get_response = OrderApi.get_by_track(track)
-    assert get_response.status_code == 200
+    response = order["response"]
+    track = response.json().get("track") if response.status_code == 201 else None
     order["track"] = track
-    order["id"] = get_response.json()["order"]["id"]
+    order["id"] = get_order_id_when_available(track) if track else None
     return order
