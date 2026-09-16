@@ -1,0 +1,8 @@
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+allure-report/
+.idea/
+.DS_Store

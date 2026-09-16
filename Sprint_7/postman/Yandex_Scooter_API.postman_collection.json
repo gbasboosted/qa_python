@@ -1,0 +1,417 @@
+{
+  "info": {
+    "_postman_id": "a163be75-9152-4d5d-a4dd-sprint700001",
+    "name": "Sprint_7 — Яндекс Самокат API",
+    "description": "Ручная проверка основных и дополнительных ручек. Запросы выполняются сверху вниз; тестовые данные удаляются запросами из папки Cleanup.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://qa-scooter.praktikum-services.ru/api/v1"
+    },
+    {
+      "key": "courierLogin",
+      "value": ""
+    },
+    {
+      "key": "courierPassword",
+      "value": ""
+    },
+    {
+      "key": "courierId",
+      "value": ""
+    },
+    {
+      "key": "track",
+      "value": ""
+    },
+    {
+      "key": "orderId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Courier — create",
+      "item": [
+        {
+          "name": "Create unique courier",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const suffix = Date.now() + '_' + Math.random().toString(36).slice(2, 10);",
+                  "pm.collectionVariables.set('courierLogin', 'postman_' + suffix);",
+                  "pm.collectionVariables.set('courierPassword', 'password_' + suffix);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Body is ok true', () => pm.expect(pm.response.json()).to.eql({ok: true}));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"{{courierLogin}}\",\n  \"password\": \"{{courierPassword}}\",\n  \"firstName\": \"Postman\"\n}"
+            },
+            "url": "{{baseUrl}}/courier"
+          }
+        },
+        {
+          "name": "Create duplicate courier",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 409', () => pm.response.to.have.status(409));",
+                  "pm.test('Error message exists', () => pm.expect(pm.response.json()).to.have.property('message'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"{{courierLogin}}\",\n  \"password\": \"{{courierPassword}}\",\n  \"firstName\": \"Postman\"\n}"
+            },
+            "url": "{{baseUrl}}/courier"
+          }
+        },
+        {
+          "name": "Create courier without login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Error message exists', () => pm.expect(pm.response.json()).to.have.property('message'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password\": \"{{courierPassword}}\",\n  \"firstName\": \"Postman\"\n}"
+            },
+            "url": "{{baseUrl}}/courier"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Courier — login",
+      "item": [
+        {
+          "name": "Login courier",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('Body contains id', () => pm.expect(body.id).to.be.a('number'));",
+                  "pm.collectionVariables.set('courierId', body.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"{{courierLogin}}\",\n  \"password\": \"{{courierPassword}}\"\n}"
+            },
+            "url": "{{baseUrl}}/courier/login"
+          }
+        },
+        {
+          "name": "Login with wrong password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Error message exists', () => pm.expect(pm.response.json()).to.have.property('message'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"login\": \"{{courierLogin}}\",\n  \"password\": \"wrong-password\"\n}"
+            },
+            "url": "{{baseUrl}}/courier/login"
+          }
+        },
+        {
+          "name": "Login without login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Error message exists', () => pm.expect(pm.response.json()).to.have.property('message'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password\": \"{{courierPassword}}\"\n}"
+            },
+            "url": "{{baseUrl}}/courier/login"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders — create",
+      "item": [
+        {
+          "name": "Create order — BLACK",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.test('Body contains track', () => pm.expect(body.track).to.be.a('number'));",
+                  "pm.collectionVariables.set('track', body.track);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Иван\",\n  \"lastName\": \"Тестов\",\n  \"address\": \"Москва, Тестовая улица, 1\",\n  \"metroStation\": 4,\n  \"phone\": \"+79990000000\",\n  \"rentTime\": 3,\n  \"deliveryDate\": \"2026-09-20\",\n  \"comment\": \"Postman manual check\",\n  \"color\": [\"BLACK\"]\n}"
+            },
+            "url": "{{baseUrl}}/orders"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders — read and accept",
+      "item": [
+        {
+          "name": "Get orders list",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('orders is an array', () => pm.expect(pm.response.json().orders).to.be.an('array'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/orders?limit=1&page=0"
+          }
+        },
+        {
+          "name": "Get order by track",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('Body contains order', () => pm.expect(body.order).to.be.an('object'));",
+                  "pm.collectionVariables.set('orderId', body.order.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/orders/track?t={{track}}"
+          }
+        },
+        {
+          "name": "Get order without track",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Error message exists', () => pm.expect(pm.response.json()).to.have.property('message'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/orders/track"
+          }
+        },
+        {
+          "name": "Accept order without courierId",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Error message exists', () => pm.expect(pm.response.json()).to.have.property('message'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/orders/accept/{{orderId}}"
+          }
+        },
+        {
+          "name": "Accept order",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Body is ok true', () => pm.expect(pm.response.json()).to.eql({ok: true}));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/orders/accept/{{orderId}}?courierId={{courierId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cleanup",
+      "item": [
+        {
+          "name": "Cancel order (track in query params)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Body is ok true', () => pm.expect(pm.response.json()).to.eql({ok: true}));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/orders/cancel?track={{track}}"
+          }
+        },
+        {
+          "name": "Delete courier",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Body is ok true', () => pm.expect(pm.response.json()).to.eql({ok: true}));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/courier/{{courierId}}"
+          }
+        },
+        {
+          "name": "Delete nonexistent courier",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 404', () => pm.response.to.have.status(404));",
+                  "pm.test('Error message exists', () => pm.expect(pm.response.json()).to.have.property('message'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/courier/999999999"
+          }
+        }
+      ]
+    }
+  ]
+}
